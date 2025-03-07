@@ -4,21 +4,25 @@ import datetime
 from datetime import datetime  # Add this specific import
 import streamlit as st
 import pandas as pd
-import win32print
-import win32api
+# Import Windows-specific modules conditionally
+import platform
+if platform.system() == 'Windows':
+    import win32print
+    import win32api
 import tempfile
 import threading
 import time
-import platform
 import subprocess
-import os
-import random
-import datetime
-from datetime import datetime  # Add this specific import
-import streamlit as st
-import pandas as pd
-import win32print
-import win32api
+
+# Remove duplicate imports
+# import os
+# import random
+# import datetime
+# from datetime import datetime
+# import streamlit as st
+# import pandas as pd
+# import win32print
+# import win32api
 
 # Prices dictionary
 prices = {
@@ -149,48 +153,31 @@ def save_bill(bill_content, bill_number):
         f.write(bill_content)
     
     return f"Bill saved to {file_path}"
+# Then modify your printing function to check the platform
 def print_bill(bill_content):
-    """Print bill to default printer"""
+    """Print the bill to the default printer."""
+    if platform.system() != 'Windows':
+        st.warning("Printing is only available on Windows systems.")
+        return False
+    
     try:
-        # Create a temporary file to store the bill content
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
-        temp_file_path = temp_file.name
-        
-        # Write bill content to the temporary file
-        with open(temp_file_path, 'w', encoding='utf-8') as f:
+        # Windows-specific printing code
+        filename = tempfile.mktemp(".txt")
+        with open(filename, "w") as f:
             f.write(bill_content)
         
-        # Close the file
-        temp_file.close()
-        
-        # Print the file using the default system printer
-        if platform.system() == 'Windows':
-            # For Windows
-            os.startfile(temp_file_path, 'print')
-            result = "Bill sent to printer. Check your printer queue."
-        else:
-            # For Unix/Linux/Mac
-            subprocess.run(['lpr', temp_file_path])
-            result = "Bill sent to printer. Check your printer queue."
-        
-        # Wait a moment before deleting the temp file to ensure printing starts
-        time.sleep(2)
-        
-        # Clean up the temporary file after a delay to ensure printing completes
-        def delayed_delete():
-            time.sleep(10)  # Wait 10 seconds before deleting
-            try:
-                os.unlink(temp_file_path)
-            except:
-                pass
-        
-        # Start a thread to delete the file after printing likely completes
-        threading.Thread(target=delayed_delete).start()
-        
-        return result
+        win32api.ShellExecute(
+            0,
+            "print",
+            filename,
+            f'/d:"{win32print.GetDefaultPrinter()}"',
+            ".",
+            0
+        )
+        return True
     except Exception as e:
-        # If printing fails, offer a download option
-        return f"Could not print directly. Error: {str(e)}. Please use 'Save Bill' option instead."
+        st.error(f"Error printing bill: {str(e)}")
+        return False
 def export_bill_to_excel(customer_name, phone_number, bill_number, cosmetic_items, grocery_items, drink_items, totals, prices):
     """Export bill to Excel file"""
     # Create bills directory if it doesn't exist
