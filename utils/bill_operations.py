@@ -157,13 +157,12 @@ def save_bill(bill_content, bill_number):
 def print_bill(bill_content):
     """Print the bill to the default printer."""
     if platform.system() != 'Windows':
-        st.warning("Printing is only available on Windows systems.")
-        return False
+        return "Printing is only available on Windows systems."
     
     try:
         # Windows-specific printing code
         filename = tempfile.mktemp(".txt")
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write(bill_content)
         
         win32api.ShellExecute(
@@ -174,10 +173,11 @@ def print_bill(bill_content):
             ".",
             0
         )
-        return True
+        # Wait a moment to ensure the print job is sent
+        time.sleep(1)
+        return "Bill sent to printer successfully!"
     except Exception as e:
-        st.error(f"Error printing bill: {str(e)}")
-        return False
+        return f"Error printing bill: {str(e)}"
 def export_bill_to_excel(customer_name, phone_number, bill_number, cosmetic_items, grocery_items, drink_items, totals, prices):
     """Export bill to Excel file"""
     # Create bills directory if it doesn't exist
