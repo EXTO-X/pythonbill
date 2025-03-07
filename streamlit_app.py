@@ -100,15 +100,16 @@ with bill_op_cols[1]:
             display_success_message(result)
         else:
             display_error_message("Please calculate the bill first")
-
 with bill_op_cols[2]:
     if st.button("Print Bill", key="print_button"):
         if "bill_content" in st.session_state:
             result = print_bill(st.session_state.bill_content)
-            display_success_message(result)
+            if result.startswith("Error") or "only available" in result:
+                display_error_message(result)
+            else:
+                display_success_message(result)
         else:
             display_error_message("Please calculate the bill first")
-
 with bill_op_cols[3]:
     if st.button("Email Bill", key="email_button", type="primary"):
         if "bill_content" in st.session_state:
