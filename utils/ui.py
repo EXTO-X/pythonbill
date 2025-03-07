@@ -25,10 +25,13 @@ def set_custom_style():
             gap: 1px;
             padding-top: 10px;
             padding-bottom: 10px;
+            color: #333333 !important; /* Darker text color for all tabs */
+            font-weight: 500;
         }
         .stTabs [aria-selected="true"] {
             background-color: #4CAF50;
-            color: white;
+            color: white !important; /* White text for selected tab */
+            font-weight: bold;
         }
     </style>
     """, unsafe_allow_html=True)
